@@ -6,48 +6,53 @@ import java.util.List;
 public class World {
     private List<Aeroport> aeroportList = new ArrayList<>();
 
+    // Constructeur pour charger les aéroports depuis un fichier
     public World(String fileName) {
         try (BufferedReader buf = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8))) {
             System.out.println("File opened successfully: " + fileName);
             String line;
+
             while ((line = buf.readLine()) != null) {
                 line = line.replaceAll("\"", ""); // Retire les guillemets
                 String[] fields = line.split(",");
 
-                System.out.println("Analyzing line: " + line);
-
                 if (fields.length <= 12) {
-                    System.out.println("Rejected: not enough fields.");
+                    System.out.println("Rejected: not enough fields. Line: " + line);
                     continue;
                 }
 
+                // Vérification du type d'aéroport (seulement les gros aéroports)
                 String type = fields[1];
-                if (!"large_airport".equals(type) && !"small_airport".equals(type)) {
-                    System.out.println("Rejected: type is not large_airport or small_airport.");
+                if (!"large_airport".equals(type)) {
+                   // System.out.println("Rejected: type is not large_airport. Line: " + line);
                     continue;
                 }
 
+                // Extraction des champs nécessaires
                 String name = fields[2];
                 String codeIATA = fields[9];
-                String latitudeField = fields[12]; // Correction : latitude est maintenant dans fields[12]
-                String longitudeField = fields[11]; // Correction : longitude est maintenant dans fields[11]
+                String latitudeField = fields[12];
+                String longitudeField = fields[11];
 
                 if (latitudeField.isEmpty() || longitudeField.isEmpty()) {
-                    System.out.println("Rejected: latitude or longitude is missing.");
+                    System.out.println("Rejected: latitude or longitude is missing. Line: " + line);
                     continue;
                 }
 
                 try {
-                    double latitude = Double.parseDouble(latitudeField.trim()); // Latitude correcte
-                    double longitude = Double.parseDouble(longitudeField.trim()); // Longitude correcte
+                    double latitude = Double.parseDouble(latitudeField.trim());
+                    double longitude = Double.parseDouble(longitudeField.trim());
 
+                    // Création de l'objet Aeroport et ajout à la liste
                     Aeroport aeroport = new Aeroport(name, latitude, longitude, codeIATA);
                     aeroportList.add(aeroport);
-                    System.out.println("Added airport: " + aeroport);
-                } catch (Exception e) {
+                    //System.out.println("Added large airport: " + aeroport);
+                } catch (NumberFormatException e) {
                     System.err.println("Error parsing latitude/longitude for line: " + line);
                 }
             }
+
+            System.out.println("Total large airports loaded: " + aeroportList.size());
         } catch (FileNotFoundException e) {
             System.err.println("File not found: " + fileName);
         } catch (IOException e) {
@@ -55,16 +60,18 @@ public class World {
         }
     }
 
+    // Trouver un aéroport par son code IATA
     public Aeroport findByCode(String code) {
         for (Aeroport aeroport : aeroportList) {
-            if (aeroport.getCodeIATA().equals(code)) {
+            if (aeroport.getCodeIATA().equalsIgnoreCase(code)) {
                 return aeroport;
             }
         }
         return null;
     }
 
-    public Aeroport findNearest(double latitude, double longitude) {
+    // Trouver l'aéroport le plus proche d'une latitude et longitude données
+    public Aeroport findNearestAirport(double longitude, double latitude){
         Aeroport nearest = null;
         double minDistance = Double.MAX_VALUE;
 
@@ -78,6 +85,7 @@ public class World {
         return nearest;
     }
 
+    // Calculer la distance entre deux points géographiques (formule Haversine)
     public double calculDistance(double lat1, double lon1, double lat2, double lon2) {
         final int EARTH_RADIUS_KM = 6371; // Rayon moyen de la Terre en kilomètres
 
@@ -98,7 +106,7 @@ public class World {
         return EARTH_RADIUS_KM * c;
     }
 
-
+    // Obtenir la liste des aéroports chargés
     public List<Aeroport> getAeroportList() {
         return aeroportList;
     }
