@@ -17,6 +17,9 @@ public class Interface extends Application {
         // Création de l'objet Earth
         Earth earth = new Earth();
 
+        // Chargement du monde avec les données des aéroports
+        World world = new World("C:/Users/floba/IdeaProjects/Projet_JAVA_S9/src/data/airport-codes_no_comma.csv");
+
         // Création d'une caméra
         PerspectiveCamera camera = new PerspectiveCamera(true);
         camera.setTranslateZ(-1000); // Position initiale de la caméra
@@ -34,7 +37,7 @@ public class Interface extends Application {
             camera.setTranslateZ(camera.getTranslateZ() + deltaY * 0.1); // Ajuste la position Z
         });
 
-        // Gestion des clics pour afficher l'aéroport le plus proche
+        // Gestion des clics pour afficher l'aéroport le plus proche et ajouter une sphère rouge
         theScene.addEventHandler(MouseEvent.ANY, event -> {
             if (event.getButton() == MouseButton.SECONDARY && event.getEventType() == MouseEvent.MOUSE_CLICKED) {
                 PickResult pickResult = event.getPickResult();
@@ -52,12 +55,12 @@ public class Interface extends Application {
                     System.out.println("Clicked at Latitude: " + latitude + ", Longitude: " + longitude);
 
                     // Rechercher l'aéroport le plus proche
-                    World world = new World("C:/Users/floba/IdeaProjects/Projet_JAVA_S9/src/data/airport-codes_no_comma.csv");
                     Aeroport nearestAirport = world.findNearestAirport(longitude, latitude);
 
-                    // Afficher l'aéroport trouvé
+                    // Afficher l'aéroport trouvé et ajouter une sphère rouge
                     if (nearestAirport != null) {
                         System.out.println("Nearest Airport: " + nearestAirport);
+                        earth.displayRedSphere(nearestAirport);
                     } else {
                         System.out.println("No airport found.");
                     }
