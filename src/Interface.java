@@ -69,7 +69,7 @@ public class Interface extends Application {
 
                         // Interroger l'API et afficher les sphères jaunes
                         try {
-                            String apiKey = "25e23df470b214c2684a44888e9d5673"; // Remplacez par votre clé API
+                            String apiKey = "25e23df470b214c2684a44888e9d5673";
                             String url = "http://api.aviationstack.com/v1/flights?access_key=" + apiKey + "&arr_iata=" + nearestAirport.getCodeIATA();
 
                             HttpClient client = HttpClient.newHttpClient();
