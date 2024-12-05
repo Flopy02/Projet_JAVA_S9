@@ -49,21 +49,18 @@ public class Earth extends Group {
         System.out.println("Coordinates: X=" + x + ", Y=" + y + ", Z=" + z);
 
         // Création de la sphère
-        Sphere sphere = new Sphere(2); // Rayon de 2 pour les sphères rouges
+        Sphere sphere = new Sphere(2); // Rayon de 2 pour les sphères rouges ou jaunes
         PhongMaterial material = new PhongMaterial();
         material.setDiffuseColor(color);
         sphere.setMaterial(material);
 
         // Positionnement dans le référentiel local de la Terre
-        /*sphere.setTranslateX(x);
-        sphere.setTranslateY(y);*/
         sphere.setTranslateZ(-R);
-        Rotate rotate1 = new Rotate(-aeroport.getLongitude(),-sphere.getTranslateX(),-sphere.getTranslateY(),
-                -sphere.getTranslateZ(),Rotate.Y_AXIS);
+        Rotate rotate1 = new Rotate(-aeroport.getLongitude(), -sphere.getTranslateX(), -sphere.getTranslateY(),
+                -sphere.getTranslateZ(), Rotate.Y_AXIS);
         sphere.getTransforms().add(rotate1);
-        Rotate rotate = new Rotate(-aeroport.getLatitude()*0.65, 0,0,300,Rotate.X_AXIS);
+        Rotate rotate = new Rotate(-aeroport.getLatitude() * 0.65, 0, 0, 300, Rotate.X_AXIS);
         sphere.getTransforms().add(rotate);
-
 
         return sphere;
     }
@@ -73,6 +70,14 @@ public class Earth extends Group {
         Sphere redSphere = createSphere(aeroport, Color.RED);
         if (redSphere != null) {
             this.getChildren().add(redSphere);
+        }
+    }
+
+    // Méthode pour afficher une sphère jaune pour un aéroport
+    public void displayYellowSphere(Aeroport aeroport) {
+        Sphere yellowSphere = createSphere(aeroport, Color.YELLOW);
+        if (yellowSphere != null) {
+            this.getChildren().add(yellowSphere);
         }
     }
 }

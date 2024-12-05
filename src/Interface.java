@@ -8,6 +8,13 @@ import javafx.scene.input.PickResult;
 import javafx.scene.input.ScrollEvent;
 import javafx.stage.Stage;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.HashSet;
+import java.util.Set;
+
 public class Interface extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -31,25 +38,24 @@ public class Interface extends Application {
         Scene theScene = new Scene(earth, 800, 600, true);
         theScene.setCamera(camera);
 
-        // Gestion du zoom et dézoom avec la molette
+        // Gestion du zoom avec la molette
         theScene.addEventHandler(ScrollEvent.SCROLL, event -> {
             double deltaY = event.getDeltaY(); // Valeur du défilement de la molette
             camera.setTranslateZ(camera.getTranslateZ() + deltaY * 0.1); // Ajuste la position Z
         });
 
-        // Gestion des clics pour afficher l'aéroport le plus proche et ajouter une sphère rouge
+        // Gestion des clics pour afficher les coordonnées
         theScene.addEventHandler(MouseEvent.ANY, event -> {
             if (event.getButton() == MouseButton.SECONDARY && event.getEventType() == MouseEvent.MOUSE_CLICKED) {
                 PickResult pickResult = event.getPickResult();
-
-                if (pickResult.getIntersectedNode() != null) {
+                if (pickResult.getIntersectedNode() != null && pickResult.getIntersectedTexCoord() != null) {
                     // Récupérer les coordonnées de la texture (U, V)
                     double u = pickResult.getIntersectedTexCoord().getX();
                     double v = pickResult.getIntersectedTexCoord().getY();
 
                     // Conversion en latitude et longitude
-                    double latitude = 180 * (0.5 - v);
-                    double longitude = 360 * (u - 0.5);
+                    double latitude = 90 - v * 180;
+                    double longitude = u * 360 - 180;
 
                     // Afficher les coordonnées calculées
                     System.out.println("Clicked at Latitude: " + latitude + ", Longitude: " + longitude);
@@ -57,13 +63,43 @@ public class Interface extends Application {
                     // Rechercher l'aéroport le plus proche
                     Aeroport nearestAirport = world.findNearestAirport(longitude, latitude);
 
-                    // Afficher l'aéroport trouvé et ajouter une sphère rouge
                     if (nearestAirport != null) {
                         System.out.println("Nearest Airport: " + nearestAirport);
                         earth.displayRedSphere(nearestAirport);
-                      //  earth.displayRedSphere(world.findByCode("ORD"));
+
+                        // Interroger l'API et afficher les sphères jaunes
+                        try {
+                            String apiKey = "25e23df470b214c2684a44888e9d5673"; // Remplacez par votre clé API
+                            String url = "http://api.aviationstack.com/v1/flights?access_key=" + apiKey + "&arr_iata=" + nearestAirport.getCodeIATA();
+
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder()
+                                    .uri(URI.create(url))
+                                    .GET()
+                                    .build();
+
+                            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                            // Analyse de la réponse JSON
+                            JsonFlightFiller jsonFlightFiller = new JsonFlightFiller(response.body(), world);
+
+                            // Utiliser un ensemble pour éviter les doublons d'aéroports
+                            Set<Aeroport> departureAirports = new HashSet<>();
+
+                            // Affichage des sphères jaunes pour les aéroports de départ
+                            for (Flight flight : jsonFlightFiller.getList()) {
+                                Aeroport departureAirport = world.findByCode(flight.getDepartureIata());
+                                if (departureAirport != null && !departureAirports.contains(departureAirport)) {
+                                    earth.displayYellowSphere(departureAirport);
+                                    departureAirports.add(departureAirport);
+                                }
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     } else {
-                        System.out.println("No airport found.");
+                        System.out.println("No nearest airport found.");
                     }
                 }
             }
@@ -83,7 +119,6 @@ public class Interface extends Application {
                     // Mise à jour de l'angle de rotation autour de l'axe Y
                     double currentAngle = earth.getRotationTransform().getAngle();
                     earth.getRotationTransform().setAngle(currentAngle + rotationSpeed * delta);
-                 //   earth.getRotationTransform().setAngle(-90);
                 }
 
                 lastUpdate = time; // Mise à jour du temps de la dernière frame
