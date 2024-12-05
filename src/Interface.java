@@ -61,6 +61,7 @@ public class Interface extends Application {
                     if (nearestAirport != null) {
                         System.out.println("Nearest Airport: " + nearestAirport);
                         earth.displayRedSphere(nearestAirport);
+                      //  earth.displayRedSphere(world.findByCode("ORD"));
                     } else {
                         System.out.println("No airport found.");
                     }
@@ -82,6 +83,7 @@ public class Interface extends Application {
                     // Mise à jour de l'angle de rotation autour de l'axe Y
                     double currentAngle = earth.getRotationTransform().getAngle();
                     earth.getRotationTransform().setAngle(currentAngle + rotationSpeed * delta);
+                 //   earth.getRotationTransform().setAngle(-90);
                 }
 
                 lastUpdate = time; // Mise à jour du temps de la dernière frame

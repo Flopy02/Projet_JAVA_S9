@@ -55,9 +55,15 @@ public class Earth extends Group {
         sphere.setMaterial(material);
 
         // Positionnement dans le référentiel local de la Terre
-        sphere.setTranslateX(x);
-        sphere.setTranslateY(y);
-        sphere.setTranslateZ(z);
+        /*sphere.setTranslateX(x);
+        sphere.setTranslateY(y);*/
+        sphere.setTranslateZ(-R);
+        Rotate rotate1 = new Rotate(-aeroport.getLongitude(),-sphere.getTranslateX(),-sphere.getTranslateY(),
+                -sphere.getTranslateZ(),Rotate.Y_AXIS);
+        sphere.getTransforms().add(rotate1);
+        Rotate rotate = new Rotate(-aeroport.getLatitude()*0.65, 0,0,300,Rotate.X_AXIS);
+        sphere.getTransforms().add(rotate);
+
 
         return sphere;
     }
